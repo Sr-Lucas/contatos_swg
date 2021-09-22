@@ -15,12 +15,13 @@ public class Contato {
     private String tipo;
     private boolean favorito; 
     private String celular;
+    private String telefone;
     private String email;
     private String observacao;
     private String nomeEmpresa;
     private String cargoEmpresa;
 
-    public Contato(String codigo, String nome, String tipo, boolean favorito, String celular, String email, String observacao, String nomeEmpresa, String cargoEmpresa) {
+    public Contato(String codigo, String nome, String tipo, boolean favorito, String celular, String email, String observacao, String nomeEmpresa, String cargoEmpresa, String telefone) {
         this.codigo = codigo;
         this.nome = nome;
         this.tipo = tipo;
@@ -30,12 +31,27 @@ public class Contato {
         this.observacao = observacao;
         this.nomeEmpresa = nomeEmpresa;
         this.cargoEmpresa = cargoEmpresa;
+        this.telefone = telefone;
     }
 
-    
+     public String getTelefone() {
+        return telefone;
+    }
     
     public String getCodigo() {
         return codigo;
+    }
+
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public String getNomeEmpresa() {
+        return nomeEmpresa;
+    }
+
+    public String getCargoEmpresa() {
+        return cargoEmpresa;
     }
 
     public String getNome() {

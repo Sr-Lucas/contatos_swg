@@ -5,9 +5,19 @@
  */
 package view;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import model.Contato;
 
 /**
@@ -15,6 +25,8 @@ import model.Contato;
  * @author 71124
  */
 public class AgendaContatos extends javax.swing.JFrame {
+    private ArrayList<Contato> listaContatos;
+    
     private static final String INSERCAO = "insercao";
     private static final String EDICAO = "edicao";
     
@@ -66,10 +78,12 @@ public class AgendaContatos extends javax.swing.JFrame {
     
     private void getSelectedGridValues() {
         this.linhaSelecionadaEditando = contatosTbl.getSelectedRow();
+        TableModel model = contatosTbl.getModel();
         
-        nomeTxt.setText(contatosTbl.getModel().getValueAt(linhaSelecionadaEditando, 0).toString());
-        String tipoContato =  contatosTbl.getModel().getValueAt(linhaSelecionadaEditando, 1).toString();
+        codigoAtualEditando = model.getValueAt(linhaSelecionadaEditando, 0).toString();
+        nomeTxt.setText(model.getValueAt(linhaSelecionadaEditando, 1).toString());
         
+        String tipoContato =  model.getValueAt(linhaSelecionadaEditando, 2).toString();
         switch (tipoContato) {
             case TIPO_CONTATO_PESSOAL:
                 tipoContatoCb.setSelectedIndex(0);
@@ -82,45 +96,45 @@ public class AgendaContatos extends javax.swing.JFrame {
                 break;
         }
                 
-        favoritoChk.setSelected((boolean) contatosTbl.getModel().getValueAt(linhaSelecionadaEditando, 2));
-        codigoAtualEditando = contatosTbl.getModel().getValueAt(linhaSelecionadaEditando, 3).toString();
+        favoritoChk.setSelected((boolean) model.getValueAt(linhaSelecionadaEditando, 3));
+        celTxt.setText(model.getValueAt(linhaSelecionadaEditando, 4).toString());
+        telTxt.setText(model.getValueAt(linhaSelecionadaEditando, 5).toString());
+        emailTxt.setText(model.getValueAt(linhaSelecionadaEditando, 6).toString());
+        obsTxt.setText(model.getValueAt(linhaSelecionadaEditando, 7).toString());
+        nomeEmpTxt.setText(model.getValueAt(linhaSelecionadaEditando, 8).toString());
+        cargoEmpTxt.setText(model.getValueAt(linhaSelecionadaEditando, 8).toString());
     }
     
     private void inserirContato() {
         Contato contato = new Contato(
-                UUID.randomUUID().toString(), 
-                nomeTxt.getText(), 
-                (String) tipoContatoCb.getSelectedItem(), 
-                rootPaneCheckingEnabled, 
-                celTxt.getText(), 
-                emailTxt.getText(), 
-                obsTxt.getText(), 
-                nomeEmpTxt.getText(), 
-                cargoEmpTxt.getText()
+            UUID.randomUUID().toString(), 
+            nomeTxt.getText(), 
+            (String) tipoContatoCb.getSelectedItem(), 
+            rootPaneCheckingEnabled, 
+            celTxt.getText(), 
+            emailTxt.getText(), 
+            obsTxt.getText(), 
+            nomeEmpTxt.getText(), 
+            cargoEmpTxt.getText(),
+            telTxt.getText()
         );
         
-        inserirTabela(contato);
-    }
-    
-    private void inserirTabela(Contato contato) {
-        DefaultTableModel defaultTableModel = (DefaultTableModel) contatosTbl.getModel();
-        
-        Object[] linha = new Object[4];
-        linha[0] = contato.getNome();
-        linha[1] = contato.getTipo();
-        linha[2] = contato.isFavorito();
-        linha[3] = contato.getCodigo();
-        
-        defaultTableModel.addRow(linha);
+        adicionarTabela(contato);
     }
     
     private void editarTabela(Contato contato, int row) {
         DefaultTableModel defaultTableModel = (DefaultTableModel) contatosTbl.getModel();
         
-        defaultTableModel.setValueAt(contato.getNome(), row, 0);
-        defaultTableModel.setValueAt(contato.getTipo(), row, 1);
-        defaultTableModel.setValueAt(contato.isFavorito(), row, 2);
-        defaultTableModel.setValueAt(contato.getCodigo(), row, 3);
+        defaultTableModel.setValueAt(contato.getCodigo(), row, 0);
+        defaultTableModel.setValueAt(contato.getNome(), row, 1);
+        defaultTableModel.setValueAt(contato.getTipo(), row, 2);
+        defaultTableModel.setValueAt(contato.isFavorito(), row, 3);
+        defaultTableModel.setValueAt(contato.getCelular(), row, 4);
+        defaultTableModel.setValueAt(contato.getTelefone(), row, 5);
+        defaultTableModel.setValueAt(contato.getEmail(), row, 6);
+        defaultTableModel.setValueAt(contato.getObservacao(), row, 7);
+        defaultTableModel.setValueAt(contato.getNomeEmpresa(), row, 8);
+        defaultTableModel.setValueAt(contato.getCargoEmpresa(), row, 9);
     }
     
     private void removerTabela(int index) {
@@ -131,15 +145,16 @@ public class AgendaContatos extends javax.swing.JFrame {
     
     private void editarContato(String codigo) {
         Contato contato = new Contato(
-                codigo, 
-                nomeTxt.getText(), 
-                (String) tipoContatoCb.getSelectedItem(), 
-                rootPaneCheckingEnabled, 
-                celTxt.getText(), 
-                emailTxt.getText(), 
-                obsTxt.getText(), 
-                nomeEmpTxt.getText(), 
-                cargoEmpTxt.getText()
+            codigo, 
+            nomeTxt.getText(), 
+            (String) tipoContatoCb.getSelectedItem(), 
+            rootPaneCheckingEnabled, 
+            celTxt.getText(), 
+            emailTxt.getText(), 
+            obsTxt.getText(), 
+            nomeEmpTxt.getText(), 
+            cargoEmpTxt.getText(),
+            telTxt.getText()
         );
         
         editarTabela(contato, linhaSelecionadaEditando);
@@ -187,6 +202,14 @@ public class AgendaContatos extends javax.swing.JFrame {
         excluirBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(0, 102, 102));
         jPanel1.setForeground(new java.awt.Color(255, 255, 255));
@@ -327,11 +350,11 @@ public class AgendaContatos extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Nome", "Contato", "Favorito", "Codigo"
+                "Codigo", "Nome", "Tipo", "Favorito", "Celular", "Telefone", "Email", "Observação", "Nome Empresa", "Cargo"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.String.class, java.lang.Boolean.class, java.lang.Integer.class
+                java.lang.Integer.class, java.lang.String.class, java.lang.Object.class, java.lang.Boolean.class, java.lang.String.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -340,8 +363,8 @@ public class AgendaContatos extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(contatosTbl);
         if (contatosTbl.getColumnModel().getColumnCount() > 0) {
-            contatosTbl.getColumnModel().getColumn(0).setPreferredWidth(200);
-            contatosTbl.getColumnModel().getColumn(2).setPreferredWidth(30);
+            contatosTbl.getColumnModel().getColumn(1).setPreferredWidth(200);
+            contatosTbl.getColumnModel().getColumn(3).setPreferredWidth(30);
         }
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -534,6 +557,61 @@ public class AgendaContatos extends javax.swing.JFrame {
         removerTabela(contatosTbl.getSelectedRow());
     }//GEN-LAST:event_excluirBtnActionPerformed
 
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        try {
+            gravarXML();
+        } catch (IOException ex) {
+            System.out.println("Erro ao salvar o arquivo XML" + ex.getMessage());
+        }
+    }//GEN-LAST:event_formWindowClosing
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        try {
+            lerXML();
+            for(int i=0; i < listaContatos.size(); i++){
+                adicionarTabela(listaContatos.get(i));
+            }   
+        } catch (IOException ex) {
+            System.out.println("Erro ao ler o arquivo XML" + ex.getMessage());   
+         }
+    }//GEN-LAST:event_formWindowOpened
+
+    public void gravarXML() throws FileNotFoundException, IOException{
+       XStream xst = new XStream(new DomDriver());
+       xst.alias("Contatos", List.class);
+       xst.alias("Contato", Contato.class);
+       File arquivo = new File("C:\\meuscontatos\\meuscontatos.xml");
+       
+       FileOutputStream arqXML = new FileOutputStream(arquivo);
+       arqXML.write(xst.toXML(listaContatos).getBytes());
+       arqXML.close();
+   }
+   
+   public void lerXML() throws FileNotFoundException, IOException{
+       XStream xst = new XStream(new DomDriver());
+       xst.alias("Contatos", List.class);
+       xst.alias("Contato", Contato.class);
+       BufferedReader arqXML = new BufferedReader(new FileReader("C:\\meuscontatos\\meuscontatos.xml"));
+       listaContatos = (ArrayList<Contato>) xst.fromXML(arqXML);
+       arqXML.close();
+   }
+   
+    private void adicionarTabela(Contato contato){
+        DefaultTableModel dados = (DefaultTableModel) contatosTbl.getModel();
+        Object[] linha = new Object[dados.getColumnCount()];
+        linha[0] = contato.getCodigo();
+        linha[1] = contato.getNome();
+        linha[2] = contato.getTipo();
+        linha[3] = contato.isFavorito();
+        linha[4] = contato.getCelular();
+        linha[5] = contato.getTelefone();
+        linha[6] = contato.getEmail();
+        linha[7] = contato.getObservacao();
+        linha[8] = contato.getNomeEmpresa();
+        linha[9] = contato.getCargoEmpresa();
+        dados.addRow(linha);
+    }
+    
     /**
      * @param args the command line arguments
      */
